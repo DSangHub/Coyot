@@ -1,0 +1,4 @@
+cd landing-page
+# Open index.html in browser
+# Or use live server
+npx serve .
