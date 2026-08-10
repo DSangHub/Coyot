@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oil Change On Your Time</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #FAFAFA;
+            color: #1E293B;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            background: #FFFFFF;
+            border-bottom: 1px solid #E2E8F0;
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: 900;
+            color: #1E3A5F;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logo span {
+            color: #F97316;
+        }
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #475569;
+            font-weight: 600;
+            font-size: 15px;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover {
+            color: #F97316;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 15px;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-primary {
+            background: #F97316;
+            color: #FFFFFF;
+        }
+        .btn-primary:hover {
+            background: #EA580C;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
+        }
+        .btn-outline {
+            background: transparent;
+            color: #1E3A5F;
+            border: 2px solid #1E3A5F;
+        }
+        .btn-outline:hover {
+            background: #1E3A5F;
+            color: #FFFFFF;
+        }
+        .btn-secondary {
+            background: #1E3A5F;
+            color: #FFFFFF;
+        }
+        .btn-secondary:hover {
+            background: #15294A;
+            transform: translateY(-2px);
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            padding: 80px 0 60px;
+            background: linear-gradient(135deg, #FFFFFF 60%, #FFF7ED 100%);
+        }
+        .hero .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+        .hero-content h1 {
+            font-size: 52px;
+            font-weight: 900;
+            line-height: 1.1;
+            color: #1E3A5F;
+            margin-bottom: 16px;
+        }
+        .hero-content h1 span {
+            color: #F97316;
+        }
+        .hero-content p {
+            font-size: 20px;
+            color: #64748B;
+            margin-bottom: 32px;
+            max-width: 480px;
+        }
+        .hero-cta {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .hero-cta .btn {
+            font-size: 17px;
+            padding: 14px 32px;
+        }
+        .hero-image {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .hero-image img {
+            max-width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.08);
+        }
+        .hero-trust {
+            display: flex;
+            gap: 32px;
+            margin-top: 32px;
+            color: #64748B;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .hero-trust span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .hero-trust .badge {
+            color: #22C55E;
+        }
+
+        /* ===== SECTIONS ===== */
+        section {
+            padding: 80px 0;
+        }
+        .section-title {
+            font-size: 38px;
+            font-weight: 800;
+            color: #1E3A5F;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .section-subtitle {
+            text-align: center;
+            color: #64748B;
+            font-size: 18px;
+            max-width: 600px;
+            margin: 0 auto 48px;
+        }
+
+        /* ===== HOW IT WORKS ===== */
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+        }
+        .step-card {
+            background: #FFFFFF;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            text-align: center;
+            border: 1px solid #E2E8F0;
+            transition: all 0.3s;
+        }
+        .step-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+        }
+        .step-number {
+            width: 48px;
+            height: 48px;
+            background: #F97316;
+            color: #FFFFFF;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 20px;
+            margin: 0 auto 16px;
+        }
+        .step-card h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+        .step-card p {
+            color: #64748B;
+            font-size: 15px;
+        }
+
+        /* ===== FEATURES ===== */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .feature-card {
+            background: #FFFFFF;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #E2E8F0;
+            transition: all 0.2s;
+        }
+        .feature-card:hover {
+            border-color: #F97316;
+        }
+        .feature-card .icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+        .feature-card h4 {
+            font-size: 18px;
+            margin-bottom: 6px;
+        }
+        .feature-card p {
+            color: #64748B;
+            font-size: 14px;
+        }
+
+        /* ===== SHOPS SECTION ===== */
+        .shops-section {
+            background: #1E3A5F;
+            color: #FFFFFF;
+        }
+        .shops-section .section-title {
+            color: #FFFFFF;
+        }
+        .shops-section .section-subtitle {
+            color: #94A3B8;
+        }
+        .shops-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+        }
+        .shop-benefit {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .shop-benefit h4 {
+            font-size: 18px;
+            margin-bottom: 6px;
+        }
+        .shop-benefit p {
+            color: #94A3B8;
+            font-size: 14px;
+        }
+
+        /* ===== PRICING ===== */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .pricing-card {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            border: 1px solid #E2E8F0;
+            transition: all 0.2s;
+        }
+        .pricing-card:hover {
+            border-color: #F97316;
+            transform: translateY(-4px);
+        }
+        .pricing-card.popular {
+            border: 2px solid #F97316;
+            position: relative;
+        }
+        .pricing-card .popular-badge {
+            position: absolute;
+            top: -12px;
+            right: 24px;
+            background: #F97316;
+            color: #FFFFFF;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .pricing-card .price {
+            font-size: 36px;
+            font-weight: 800;
+            color: #1E3A5F;
+            margin: 16px 0;
+        }
+        .pricing-card .price small {
+            font-size: 14px;
+            color: #64748B;
+            font-weight: 400;
+        }
+        .pricing-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 16px 0 24px;
+        }
+        .pricing-card ul li {
+            padding: 6px 0;
+            color: #475569;
+            font-size: 14px;
+        }
+        .pricing-card ul li::before {
+            content: "✓";
+            color: #22C55E;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        /* ===== CTA ===== */
+        .cta-section {
+            background: linear-gradient(135deg, #F97316, #EA580C);
+            color: #FFFFFF;
+            text-align: center;
+            padding: 80px 0;
+        }
+        .cta-section h2 {
+            font-size: 38px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+        .cta-section p {
+            font-size: 18px;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 32px;
+        }
+        .cta-section .btn {
+            background: #FFFFFF;
+            color: #F97316;
+            font-size: 17px;
+            padding: 14px 40px;
+        }
+        .cta-section .btn:hover {
+            background: #F1F5F9;
+            transform: translateY(-2px);
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: #0F172A;
+            color: #94A3B8;
+            padding: 48px 0 24px;
+        }
+        footer .container {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 48px;
+        }
+        footer h4 {
+            color: #FFFFFF;
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+        footer a {
+            color: #94A3B8;
+            text-decoration: none;
+            display: block;
+            padding: 4px 0;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        footer a:hover {
+            color: #FFFFFF;
+        }
+        footer .copyright {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding-top: 32px;
+            border-top: 1px solid #1E293B;
+            font-size: 14px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 992px) {
+            .hero .container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            .hero-content p {
+                margin: 0 auto 32px;
+            }
+            .hero-cta {
+                justify-content: center;
+            }
+            .hero-trust {
+                justify-content: center;
+            }
+            .steps,
+            .features-grid,
+            .pricing-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .shops-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 640px) {
+            .hero-content h1 {
+                font-size: 32px;
+            }
+            .steps,
+            .features-grid,
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+            .nav-links {
+                display: none;
+            }
+            footer .container {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            .section-title {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <header>
+        <div class="container">
+            <a href="/" class="logo">🐺 Coyot<span>.</span></a>
+            <nav class="nav-links">
+                <a href="#how-it-works">How It Works</a>
+                <a href="#features">Features</a>
+                <a href="#for-shops">For Shops</a>
+                <a href="#pricing">Pricing</a>
+                <a href="/app" class="btn btn-primary">Open App</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Oil changes. Finally <span>smart enough</span> to work.</h1>
+                <p>Oily Coyot chased oil changes. Then he got smart. Now you can too. See green shops near you, lock in the price, book in 15 seconds.</p>
+                <div class="hero-cta">
+                    <a href="/app" class="btn btn-primary">📍 Find My Oil Change</a>
+                    <a href="#for-shops" class="btn btn-outline">🏪 I'm a Shop</a>
+                </div>
+                <div class="hero-trust">
+                    <span>⭐ 4.8 Avg Rating</span>
+                    <span>💲 100% Price Transparency</span>
+                    <span class="badge">✅ No Upsell Guarantee</span>
+                </div>
+            </div>
+            <div class="hero-image">
+                <!-- Oily Coyot mascot placeholder -->
+                <div style="background: #FFF7ED; border-radius: 16px; padding: 40px; text-align: center; border: 2px dashed #F97316; min-height: 300px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                    <div style="font-size: 80px;">🐺</div>
+                    <div style="font-weight: 700; color: #1E3A5F; margin-top: 12px;">Oily Coyot</div>
+                    <div style="color: #64748B; font-size: 14px;">"Oil Change On Your Time"</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== HOW IT WORKS ===== -->
+    <section id="how-it-works">
+        <div class="container">
+            <h2 class="section-title">Three steps. Fifteen seconds. <span style="color:#F97316;">Oily approves.</span></h2>
+            <p class="section-subtitle">Open Coyot. See the map. Pick your shop. Drive out. No phone calls. No haggling. No surprises.</p>
+            <div class="steps">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>See Green</h3>
+                    <p>Open the map. Green pins = available shops. Red = busy. Just like booking a ride.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>Tap & Book</h3>
+                    <p>Pick your shop. Lock your price. Your car profile saves your details. One tap.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Arrive & Drive</h3>
+                    <p>Tap "I'm Here" when you arrive. Get your oil changed. Drive out. Done.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FEATURES ===== -->
+    <section id="features" style="background: #F8FAFC;">
+        <div class="container">
+            <h2 class="section-title">What makes Coyot different? <span style="color:#F97316;">Oily's got receipts.</span></h2>
+            <p class="section-subtitle">Built for transparency. Designed to kill the upsell.</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="icon">🔴🟢</div>
+                    <h4>Live Map</h4>
+                    <p>See real-time availability. Green = ready. Red = busy. No phone calls.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">💲</div>
+                    <h4>Upfront Price</h4>
+                    <p>Locked in before you book. No "while we're in there" surprises.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">⭐</div>
+                    <h4>Honest Ratings</h4>
+                    <p>Shops live and die by their reputation. No-upsell pressure is tracked.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🛢️</div>
+                    <h4>Your Car, Saved</h4>
+                    <p>Year, make, model, oil type — stored forever. One tap booking.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">📱</div>
+                    <h4>"I'm Here" Check-in</h4>
+                    <p>Pull up, tap, they start. No waiting room purgatory.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">✅</div>
+                    <h4>No Upsell Guarantee</h4>
+                    <p>If a shop pressures you, we flag them. Three strikes and they're out.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOR SHOPS ===== -->
+    <section id="for-shops" class="shops-section">
+        <div class="container">
+            <h2 class="section-title">Are you a shop? <span style="color:#F97316;">Join Oily's pack.</span></h2>
+            <p class="section-subtitle">Stop chasing customers. Let them find you. Fill your empty bays with people who actually want your service.</p>
+            <div class="shops-grid">
+                <div class="shop-benefit">
+                    <h4>🔄 Fill Empty Bays</h4>
+                    <p>Turn slow days into busy days. Customers find you on the map — not your billboard.</p>
+                </div>
+                <div class="shop-benefit">
+                    <h4>📱 Zero Phone Time</h4>
+                    <p>Customers book themselves. You just tap Accept. No phone tag. No quotes.</p>
+                </div>
+                <div class="shop-benefit">
+                    <h4>💳 Pre-Paid Guarantee</h4>
+                    <p>Payment is locked in before they arrive. No no-shows with empty pockets.</p>
+                </div>
+                <div class="shop-benefit">
+                    <h4>⭐ Build Your Reputation</h4>
+                    <p>Good ratings get you featured. Top shops pay lower commission.</p>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="/app?view=shop" class="btn btn-primary" style="font-size:17px; padding:14px 40px;">🏪 Join Coyot — Free</a>
+                <p style="color:#94A3B8; font-size:14px; margin-top:12px;">$0 setup · No monthly fees · Commission starts at 8%</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== PRICING ===== -->
+    <section id="pricing">
+        <div class="container">
+            <h2 class="section-title">Simple pricing. <span style="color:#F97316;">Oily's guarantee.</span></h2>
+            <p class="section-subtitle">What you see is what you pay. Locked in at booking.</p>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Conventional</h3>
+                    <div class="price">$59 <small>+</small></div>
+                    <ul>
+                        <li>Conventional oil</li>
+                        <li>Oil filter included</li>
+                        <li>Disposal fee included</li>
+                        <li>30-min labor</li>
+                    </ul>
+                    <a href="/app" class="btn btn-outline" style="width:100%;">Book Now</a>
+                </div>
+                <div class="pricing-card popular">
+                    <div class="popular-badge">MOST POPULAR</div>
+                    <h3>Synthetic Blend</h3>
+                    <div class="price">$79 <small>+</small></div>
+                    <ul>
+                        <li>Blend oil</li>
+                        <li>Oil filter included</li>
+                        <li>Disposal fee included</li>
+                        <li>30-min labor</li>
+                    </ul>
+                    <a href="/app" class="btn btn-primary" style="width:100%;">Book Now</a>
+                </div>
+                <div class="pricing-card">
+                    <h3>Full Synthetic</h3>
+                    <div class="price">$89 <small>+</small></div>
+                    <ul>
+                        <li>Full synthetic oil</li>
+                        <li>Oil filter included</li>
+                        <li>Disposal fee included</li>
+                        <li>30-min labor</li>
+                    </ul>
+                    <a href="/app" class="btn btn-outline" style="width:100%;">Book Now</a>
+                </div>
+            </div>
+            <p style="text-align:center; color:#64748B; font-size:14px; margin-top:24px;">* Prices vary by shop and vehicle. Locked in at booking.</p>
+        </div>
+    </section>
+
+    <!-- ===== FINAL CTA ===== -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Stop chasing oil changes. <br>Let them come to you.</h2>
+            <p>Open Coyot. See the map. Pick a time. Drive out. Oily's waiting.</p>
+            <a href="/app" class="btn">📍 Find My Oil Change</a>
+            <p style="margin-top: 16px; font-size: 14px; opacity: 0.8;">30 seconds to sign up · 15 seconds to book · 0 minutes of phone tag</p>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer>
+        <div class="container">
+            <div>
+                <a href="/" class="logo" style="color:#FFFFFF; font-size:24px;">🐺 Coyot<span style="color:#F97316;">.</span></a>
+                <p style="margin-top: 12px; font-size: 14px;">Oil Change On Your Time</p>
+                <p style="font-size: 14px; margin-top: 4px;">hello@coyot.app</p>
+            </div>
+            <div>
+                <h4>Customers</h4>
+                <a href="/app">Book Now</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+            </div>
+            <div>
+                <h4>Shops</h4>
+                <a href="#for-shops">Join Coyot</a>
+                <a href="/app?view=shop">Shop Dashboard</a>
+                <a href="#">Partner Resources</a>
+            </div>
+            <div>
+                <h4>Company</h4>
+                <a href="#">About</a>
+                <a href="#">FAQ</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+            </div>
+            <div class="copyright">
+                © 2026 Coyot. Oil Change On Your Time. Oily Coyot is a fictional character. 🐺
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Simple smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
