@@ -1,0 +1,27 @@
+coyot-app/
+├── landing-page/          # Marketing landing page
+│   ├── index.html
+│   ├── styles.css
+│   └── script.js
+├── app/                   # Main web app (PWA)
+│   ├── index.html
+│   ├── styles.css
+│   └── script.js
+├── backend/               # Node.js + Express API
+│   ├── package.json
+│   ├── .env
+│   ├── server.js
+│   ├── routes/
+│   │   ├── auth.js
+│   │   ├── customers.js
+│   │   ├── shops.js
+│   │   └── bookings.js
+│   ├── models/
+│   │   ├── Customer.js
+│   │   ├── Shop.js
+│   │   └── Booking.js
+│   └── middleware/
+│       └── auth.js
+└── firebase/
+    ├── firestore.rules
+    └── firebase.json
