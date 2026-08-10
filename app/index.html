@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Coyot — Oil Change On Your Time</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #F8FAFC;
+            color: #1E293B;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 480px;
+            margin: 0 auto;
+            background: #FFFFFF;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.06);
+            position: relative;
+        }
+
+        /* ===== HEADER ===== */
+        .app-header {
+            padding: 12px 16px;
+            background: #1E3A5F;
+            color: #FFFFFF;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+        .app-header .logo {
+            font-size: 20px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .app-header .logo span {
+            color: #F97316;
+        }
+        .app-header .profile-icon {
+            width: 36px;
+            height: 36px;
+            background: #F97316;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        /* ===== MAP ===== */
+        #map {
+            flex: 1;
+            background: #E2E8F0;
+            position: relative;
+            min-height: 300px;
+        }
+        #map .map-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #F1F5F9;
+            color: #94A3B8;
+            font-size: 14px;
+        }
+        #map .map-placeholder .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #E2E8F0;
+            border-top-color: #F97316;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== MAP CONTROLS ===== */
+        .map-controls {
+            position: absolute;
+            bottom: 140px;
+            right: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 5;
+        }
+        .map-controls button {
+            width: 44px;
+            height: 44px;
+            border: none;
+            border-radius: 50%;
+            background: #FFFFFF;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .map-controls button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+        }
+        .map-controls .radius-btn {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1E3A5F;
+        }
+
+        /* ===== SHOP STATUS LEGEND ===== */
+        .map-legend {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            gap: 16px;
+            z-index: 5;
+        }
+        .map-legend span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .map-legend .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .dot-green { background: #22C55E; }
+        .dot-red { background: #EF4444; }
+        .dot-yellow { background: #F59E0B; }
+
+        /* ===== BOTTOM SHEET ===== */
+        .bottom-sheet {
+            background: #FFFFFF;
+            border-radius: 20px 20px 0 0;
+            padding: 16px 20px 24px;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
+            flex-shrink: 0;
+            max-height: 45vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 10;
+        }
+        .bottom-sheet .handle {
+            width: 40px;
+            height: 4px;
+            background: #CBD5E1;
+            border-radius: 2px;
+            margin: 0 auto 12px;
+        }
+
+        /* ===== SHOP CARD ===== */
+        .shop-card {
+            display: flex;
+            gap: 16px;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid #E2E8F0;
+            background: #FFFFFF;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+        }
+        .shop-card:hover {
+            border-color: #F97316;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.1);
+        }
+        .shop-card .shop-info {
+            flex: 1;
+        }
+        .shop-card .shop-info h4 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .shop-card .shop-info .rating {
+            color: #F59E0B;
+            font-size: 14px;
+        }
+        .shop-card .shop-info .distance {
+            font-size: 13px;
+            color: #64748B;
+        }
+        .shop-card .shop-info .price {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1E3A5F;
+        }
+        .shop-card .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            align-self: center;
+        }
+        .status-badge.available {
+            background: #DCFCE7;
+            color: #15803D;
+        }
+        .status-badge.busy {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+        .status-badge.limited {
+            background: #FEF3C7;
+            color: #B45309;
+        }
+
+        /* ===== BOOK BUTTON ===== */
+        .book-btn {
+            width: 100%;
+            padding: 14px;
+            background: #F97316;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+        .book-btn:hover {
+            background: #EA580C;
+        }
+        .book-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal h2 {
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        .modal .form-group {
+            margin-bottom: 16px;
+        }
+        .modal .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: #475569;
+        }
+        .modal .form-group input,
+        .modal .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        .modal .form-group input:focus,
+        .modal .form-group select:focus {
+            outline: none;
+            border-color: #F97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+        }
+        .modal .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: #F97316;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .modal .btn-primary:hover {
+            background: #EA580C;
+        }
+        .modal .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            color: #64748B;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .modal .btn-secondary:hover {
+            background: #F1F5F9;
+        }
+        .modal .view-toggle {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .modal .view-toggle button {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid #E2E8F0;
+            border-radius: 8px;
+            background: transparent;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .modal .view-toggle button.active {
+            border-color: #F97316;
+            background: #FFF7ED;
+            color: #F97316;
+        }
+
+        /* ===== NOTIFICATION ===== */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1E293B;
+            color: #FFFFFF;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 200;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+        }
+        .toast.show {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .app-container {
+                max-width: 100%;
+                border-radius: 0;
+            }
+            .bottom-sheet {
+                padding: 12px 16px 20px;
+                max-height: 50vh;
+            }
+            .modal {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container" id="app">
+
+        <!-- ===== HEADER ===== -->
+        <header class="app-header">
+            <div class="logo">🐺 Coyot<span>.</span></div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span style="font-size:13px; font-weight:600;" id="userGreeting">Guest</span>
+                <div class="profile-icon" id="profileBtn" title="Login / Sign Up">👤</div>
+            </div>
+        </header>
+
+        <!-- ===== MAP ===== -->
+        <div id="map">
+            <div class="map-placeholder" id="mapPlaceholder">
+                <div class="spinner"></div>
+                <p>Loading map...</p>
+                <p style="font-size:12px; margin-top:4px;">Allow location access when prompted</p>
+            </div>
+
+            <!-- Legend -->
+            <div class="map-legend">
+                <span><span class="dot dot-green"></span> Available</span>
+                <span><span class="dot dot-yellow"></span> Limited</span>
+                <span><span class="dot dot-red"></span> Busy</span>
+            </div>
+
+            <!-- Map Controls -->
+            <div class="map-controls">
+                <button id="locateBtn" title="Find me">📍</button>
+                <button class="radius-btn" id="radiusBtn">5 mi</button>
+                <button id="refreshBtn" title="Refresh">🔄</button>
+            </div>
+        </div>
+
+        <!-- ===== BOTTOM SHEET ===== -->
+        <div class="bottom-sheet" id="bottomSheet">
+            <div class="handle"></div>
+
+            <!-- Shops List -->
+            <div id="shopsList">
+                <div style="text-align:center; padding:20px 0; color:#94A3B8; font-size:14px;">
+                    <p>🔍 Finding shops near you...</p>
+                    <p style="font-size:12px; margin-top:4px;">Tap "Find me" to get started</p>
+                </div>
+            </div>
+
+            <!-- Book Button -->
+            <button class="book-btn" id="bookBtn" disabled>Select a shop to book</button>
+        </div>
+
+        <!-- ===== MODAL ===== -->
+        <div class="modal-overlay" id="modalOverlay">
+            <div class="modal" id="modal">
+                <h2 id="modalTitle">Welcome to Coyot</h2>
+
+                <!-- View Toggle -->
+                <div class="view-toggle">
+                    <button class="active" data-view="customer">🚗 Customer</button>
+                    <button data-view="shop">🏪 Shop</button>
+                </div>
+
+                <!-- Auth Form -->
+                <form id="authForm">
+                    <div id="formFields">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="email" placeholder="you@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="password" placeholder="••••••••" minlength="6" required>
+                        </div>
+                        <div id="customerFields">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" id="fullName" placeholder="John Doe">
+                            </div>
+                            <div class="form-group">
+                                <label>Vehicle Year</label>
+                                <input type="number" id="vehicleYear" placeholder="2020">
+                            </div>
+                            <div class="form-group">
+                                <label>Vehicle Make</label>
+                                <input type="text" id="vehicleMake" placeholder="Toyota">
+                            </div>
+                            <div class="form-group">
+                                <label>Vehicle Model</label>
+                                <input type="text" id="vehicleModel" placeholder="Camry">
+                            </div>
+                            <div class="form-group">
+                                <label>Engine Size (Liters)</label>
+                                <select id="engineSize">
+                                    <option value="2.0">2.0L</option>
+                                    <option value="2.5" selected>2.5L</option>
+                                    <option value="3.0">3.0L</option>
+                                    <option value="3.5">3.5L</option>
+                                    <option value="5.0">5.0L</option>
+                                    <option value="6.2">6.2L</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Oil Type</label>
+                                <select id="oilType">
+                                    <option value="conventional">Conventional</option>
+                                    <option value="synthetic_blend" selected>Synthetic Blend</option>
+                                    <option value="full_synthetic">Full Synthetic</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="shopFields" style="display:none;">
+                            <div class="form-group">
+                                <label>Shop Name</label>
+                                <input type="text" id="shopName" placeholder="Mike's Auto Repair">
+                            </div>
+                            <div class="form-group">
+                                <label>Shop Address</label>
+                                <input type="text" id="shopAddress" placeholder="123 Main St">
+                            </div>
+                            <div class="form-group">
+                                <label>Number of Bays</label>
+                                <select id="numBays">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3" selected>3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5+</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Labor Rate ($/hour)</label>
+                                <input type="number" id="laborRate" placeholder="80" value="80">
+                            </div>
+                            <div class="form-group">
+                                <label>Hours of Operation</label>
+                                <input type="text" id="shopHours" placeholder="8:00 AM - 6:00 PM">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary" id="authSubmit">Sign Up</button>
+                    <button type="button" class="btn-secondary" id="toggleAuth">
+                        Already have an account? Log In
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ===== TOAST ===== -->
+        <div class="toast" id="toast"></div>
+    </div>
+
+    <script>
+        // ============================================================
+        // COMPLETE APP SCRIPT — Coyot Oil Change App
+        // ============================================================
+
+        // ===== STATE =====
+        const state = {
+            user: null,
+            userType: 'customer', // 'customer' | 'shop'
+            location: null,
+            shops: [],
+            selectedShop: null,
+            radius: 5, // miles
+            isLoggedIn: false,
+            isSignUp: true,
+            isShopView: false,
+            bookingInProgress: false,
+        };
+
+        // ===== DOM REFS =====
+        const $ = id => document.getElementById(id);
+        const mapPlaceholder = $('mapPlaceholder');
+        const shopsList = $('shopsList');
+        const bookBtn = $('bookBtn');
+        const profileBtn = $('profileBtn');
+        const modalOverlay = $('modalOverlay');
+        const modal = $('modal');
+        const modalTitle = $('modalTitle');
+        const authForm = $('authForm');
+        const authSubmit = $('authSubmit');
+        const toggleAuth = $('toggleAuth');
+        const customerFields = $('customerFields');
+        const shopFields = $('shopFields');
+        const viewToggle = document.querySelectorAll('.view-toggle button');
+        const locateBtn = $('locateBtn');
+        const radiusBtn = $('radiusBtn');
+        const refreshBtn = $('refreshBtn');
+        const toast = $('toast');
+        const userGreeting = $('userGreeting');
+        const emailInput = $('email');
+        const passwordInput = $('password');
+        const fullNameInput = $('fullName');
+        const vehicleYearInput = $('vehicleYear');
+        const vehicleMakeInput = $('vehicleMake');
+        const vehicleModelInput = $('vehicleModel');
+        const engineSizeSelect = $('engineSize');
+        const oilTypeSelect = $('oilType');
+        const shopNameInput = $('shopName');
+        const shopAddressInput = $('shopAddress');
+        const numBaysSelect = $('numBays');
+        const laborRateInput = $('laborRate');
+        const shopHoursInput = $('shopHours');
+
+        // ===== TOAST =====
+        function showToast(msg, isError = false) {
+            toast.textContent = msg;
+            toast.style.background = isError ? '#DC2626' : '#1E293B';
+            toast.classList.add('show');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => toast.classList.remove('show'), 3500);
+        }
+
+        // ===== MOCK DATA =====
+        const MOCK_SHOPS = [
+            {
+                id: 'shop_1',
+                name: "Mike's Auto Repair",
+                address: "123 Main St",
+                lat: 37.7749,
+                lng: -122.4194,
+                rating: 4.8,
+                reviews: 203,
+                status: 'available', // 'available' | 'limited' | 'busy'
+                baseLaborRate: 80,
+                numBays: 3,
+                occupiedBays: 1,
+                hours: '8:00 AM - 6:00 PM',
+                distance: 0.7,
+                priceEstimate: 89
+            },
+            {
+                id: 'shop_2',
+                name: "Sarah's Garage",
+                address: "456 Oak Ave",
+                lat: 37.7829,
+                lng: -122.4104,
+                rating: 4.9,
+                reviews: 156,
+                status: 'available',
+                baseLaborRate: 75,
+                numBays: 2,
+                occupiedBays: 0,
+                hours: '7:30 AM - 5:30 PM',
+                distance: 1.2,
+                priceEstimate: 84
+            },
+            {
+                id: 'shop_3',
+                name: "David's Car Care",
+                address: "789 Pine St",
+                lat: 37.7689,
+                lng: -122.4254,
+                rating: 4.6,
+                reviews: 89,
+                status: 'limited',
+                baseLaborRate: 85,
+                numBays: 4,
+                occupiedBays: 3,
+                hours: '8:00 AM - 7:00 PM',
+                distance: 2.1,
+                priceEstimate: 94
+            },
+            {
+                id: 'shop_4',
+                name: "Quick Lube Express",
+                address: "321 Elm Blvd",
+                lat: 37.7909,
+                lng: -122.4324,
+                rating: 4.2,
+                reviews: 312,
+                status: 'busy',
+                baseLaborRate: 70,
+                numBays: 5,
+                occupiedBays: 5,
+                hours: '7:00 AM - 8:00 PM',
+                distance: 3.5,
+                priceEstimate: 79
+            },
+            {
+                id: 'shop_5',
+                name: "Honest Mechanic Co.",
+                address: "654 Cedar Ln",
+                lat: 37.7629,
+                lng: -122.4084,
+                rating: 4.9,
+                reviews: 47,
+                status: 'available',
+                baseLaborRate: 82,
+                numBays: 2,
+                occupiedBays: 0,
+                hours: '9:00 AM - 5:00 PM',
+                distance: 1.8,
+                priceEstimate: 91
+            }
+        ];
+
+        // ===== PRICE CALCULATOR =====
+        function calculatePrice(shop, engineSize, oilType) {
+            const oilPrices = {
+                conventional: { base: 35, perL: 0 },
+                synthetic_blend: { base: 50, perL: 2 },
+                full_synthetic: { base: 65, perL: 3 }
+            };
+
+            // Engine size affects oil quantity
+            let oilQty = 5; // default quarts
+            if (engineSize >= 5.0) oilQty = 7;
+            else if (engineSize >= 3.5) oilQty = 6;
+            else if (engineSize >= 2.5) oilQty = 5;
+            else oilQty = 4.5;
+
+            const oilPrice = oilPrices[oilType] || oilPrices.synthetic_blend;
+            const oilCost = oilPrice.base + (oilPrice.perL * (oilQty - 4));
+            const filterCost = 12;
+            const disposalFee = 5;
+            const laborCost = (shop.baseLaborRate / 60) * 30; // 30 min labor
+
+            const total = Math.round(oilCost + filterCost + disposalFee + laborCost);
+            return { total, breakdown: { oilCost, filterCost, disposalFee, laborCost, oilQty } };
+        }
+
+        // ===== GEOLOCATION =====
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        state.location = {
+                            lat: pos.coords.latitude,
+                            lng: pos.coords.longitude
+                        };
+                        mapPlaceholder.innerHTML = `
+                            <p style="font-size:16px; color:#1E293B;">📍 Map would load here</p>
+                            <p style="font-size:12px; color:#94A3B8;">Lat: ${state.location.lat.toFixed(4)}, Lng: ${state.location.lng.toFixed(4)}</p>
+                            <p style="font-size:12px; color:#22C55E; margin-top:8px;">✅ Location acquired! Finding shops...</p>
+                        `;
+                        loadShops();
+                    },
+                    (err) => {
+                        console.error('Geolocation error:', err);
+                        mapPlaceholder.innerHTML = `
+                            <p style="font-size:16px; color:#DC2626;">⚠️ Location access denied</p>
+                            <p style="font-size:12px; color:#94A3B8;">Enable location in your browser or tap "Find me"</p>
+                            <button onclick="getLocation()" style="margin-top:12px; padding:8px 20px; background:#F97316; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:600;">Try Again</button>
+                        `;
+                        showToast('Please enable location access to find shops near you', true);
+                    },
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            } else {
+                mapPlaceholder.innerHTML = `<p>⚠️ Geolocation not supported</p>`;
+                showToast('Geolocation not supported by your browser', true);
+            }
+        }
+
+        // ===== LOAD SHOPS =====
+        function loadShops() {
+            // Calculate distance from user to each shop
+            const shops = MOCK_SHOPS.map(shop => {
+                if (state.location) {
+                    const dist = haversineDistance(
+                        state.location.lat, state.location.lng,
+                        shop.lat, shop.lng
+                    );
+                    shop.distance = Math.round(dist * 10) / 10;
+                }
+                return shop;
+            });
+
+            // Filter by radius
+            const filtered = shops.filter(s => s.distance <= state.radius);
+            state.shops = filtered.sort((a, b) => a.distance - b.distance);
+
+            renderShops();
+            updateMap();
+        }
+
+        // ===== HAVERSINE DISTANCE =====
+        function haversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 3959; // miles
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        // ===== RENDER SHOPS =====
+        function renderShops() {
+            if (!state.shops.length) {
+                shopsList.innerHTML = `
+                    <div style="text-align:center; padding:30px 0; color:#94A3B8;">
+                        <p>😕 No shops within ${state.radius} miles</p>
+                        <p style="font-size:12px; margin-top:4px;">Try increasing your radius</p>
+                    </div>
+                `;
+                bookBtn.disabled = true;
+                bookBtn.textContent = 'No shops available';
+                return;
+            }
+
+            let html = '';
+            state.shops.forEach((shop, index) => {
+                const statusClass = shop.status;
+                const statusLabel = shop.status.charAt(0).toUpperCase() + shop.status.slice(1);
+                const ratingStars = '⭐'.repeat(Math.floor(shop.rating)) + (shop.rating % 1 >= 0.5 ? '⭐' : '');
+
+                // Calculate price based on selected engine & oil
+                const engineSize = parseFloat(engineSizeSelect.value) || 2.5;
+                const oilType = oilTypeSelect.value;
+                const priceData = calculatePrice(shop, engineSize, oilType);
+
+                html += `
+                    <div class="shop-card" data-shop-id="${shop.id}" onclick="selectShop('${shop.id}')">
+                        <div style="flex:1;">
+                            <div style="display:flex; justify-content:space-between; align-items:start;">
+                                <div class="shop-info">
+                                    <h4>${shop.name}</h4>
+                                    <div class="rating">${ratingStars} ${shop.rating} (${shop.reviews} reviews)</div>
+                                    <div class="distance">📍 ${shop.distance} miles · ${shop.hours}</div>
+                                    <div style="margin-top:4px;">
+                                        <span style="font-size:13px; color:#64748B;">${shop.address}</span>
+                                    </div>
+                                </div>
+                                <span class="status-badge ${statusClass}">${statusLabel}</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                                <span class="price">$${priceData.total}</span>
+                                <span style="font-size:12px; color:#94A3B8;">includes oil, filter, labor</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            shopsList.innerHTML = html;
+
+            // Auto-select first available shop
+            const firstAvailable = state.shops.find(s => s.status === 'available');
+            if (firstAvailable) {
+                selectShop(firstAvailable.id);
+            } else if (state.shops.length > 0) {
+                selectShop(state.shops[0].id);
+            }
+        }
+
+        // ===== SELECT SHOP =====
+        function selectShop(shopId) {
+            const shop = state.shops.find(s => s.id === shopId);
+            if (!shop) return;
+
+            state.selectedShop = shop;
+            bookBtn.disabled = false;
+            bookBtn.textContent = `Book ${shop.name} — $${calculatePrice(shop, parseFloat(engineSizeSelect.value), oilTypeSelect.value).total}`;
+
+            // Highlight selected card
+            document.querySelectorAll('.shop-card').forEach(el => {
+                el.style.borderColor = el.dataset.shopId === shopId ? '#F97316' : '#E2E8F0';
+                el.style.background = el.dataset.shopId === shopId ? '#FFF7ED' : '#FFFFFF';
+            });
+
+            // Simulate map pin highlight
+            updateMap(shopId);
+        }
+
+        // ===== UPDATE MAP =====
+        function updateMap(highlightShopId = null) {
+            // In a real implementation, this would update Google Maps markers
+            // For this demo, we update the placeholder
+            const shopCount = state.shops.length;
+            const availCount = state.shops.filter(s => s.status === 'available').length;
+
+            let statusText = '';
+            if (state.location) {
+                statusText = `
+                    <p style="font-size:14px; color:#1E293B;">📍 ${shopCount} shops within ${state.radius} miles</p>
+                    <p style="font-size:12px; color:#22C55E;">🟢 ${availCount} available · 🔴 ${shopCount - availCount} busy/limited</p>
+                    ${highlightShopId ? `<p style="font-size:12px; color:#F97316;">🔍 Selected: ${state.selectedShop?.name}</p>` : ''}
+                `;
+            }
+
+            mapPlaceholder.innerHTML = `
+                <div style="padding:20px; text-align:center; width:100%;">
+                    <div style="font-size:48px; margin-bottom:8px;">🗺️</div>
+                    ${statusText || '<p>📍 Map would display here with Google Maps API</p>'}
+                    <p style="font-size:11px; color:#94A3B8; margin-top:8px;">Green = Available · Yellow = Limited · Red = Busy</p>
+                    ${highlightShopId ? `<div style="margin-top:8px; padding:6px 12px; background:#F97316; color:#fff; border-radius:6px; display:inline-block; font-size:12px; font-weight:600;">📍 Selected: ${state.selectedShop?.name}</div>` : ''}
+                </div>
+            `;
+        }
+
+        // ===== BOOK =====
+        async function handleBooking() {
+            if (!state.selectedShop) {
+                showToast('Please select a shop first', true);
+                return;
+            }
+            if (!state.isLoggedIn) {
+                showToast('Please log in to book', true);
+                modalOverlay.classList.add('active');
+                return;
+            }
+
+            state.bookingInProgress = true;
+            bookBtn.disabled = true;
+            bookBtn.textContent = 'Booking...';
+
+            const engineSize = parseFloat(engineSizeSelect.value) || 2.5;
+            const oilType = oilTypeSelect.value;
+            const priceData = calculatePrice(state.selectedShop, engineSize, oilType);
+
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            showToast(`✅ Booked at ${state.selectedShop.name}! ${state.selectedShop.address} — $${priceData.total}`);
+            bookBtn.textContent = '✅ Booked!';
+            bookBtn.style.background = '#22C55E';
+
+            setTimeout(() => {
+                bookBtn.style.background = '#F97316';
+                bookBtn.textContent = 'Book Another';
+                bookBtn.disabled = false;
+                state.bookingInProgress = false;
+            }, 3000);
+        }
+
+        // ===== AUTH =====
+        function toggleAuthMode() {
+            state.isSignUp = !state.isSignUp;
+            authSubmit.textContent = state.isSignUp ? 'Sign Up' : 'Log In';
+            toggleAuth.textContent = state.isSignUp ? 'Already have an account? Log In' : "Don't have an account? Sign Up";
+
+            // Show/hide extra fields based on mode
+            const isCustomer = state.userType === 'customer';
+            const fields = isCustomer ? customerFields : shopFields;
+            if (state.isSignUp) {
+                fields.style.display = 'block';
+                if (isCustomer) {
+                    document.querySelectorAll('#customerFields .form-group').forEach(el => el.style.display = 'block');
+                    document.querySelectorAll('#shopFields .form-group').forEach(el => el.style.display = 'none');
+                    shopFields.style.display = 'none';
+                    customerFields.style.display = 'block';
+                } else {
+                    document.querySelectorAll('#customerFields .form-group').forEach(el => el.style.display = 'none');
+                    document.querySelectorAll('#shopFields .form-group').forEach(el => el.style.display = 'block');
+                    customerFields.style.display = 'none';
+                    shopFields.style.display = 'block';
+                }
+            } else {
+                fields.style.display = 'none';
+            }
+        }
+
+        function handleAuth(e) {
+            e.preventDefault();
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            if (!email || password.length < 6) {
+                showToast('Please enter valid email and password (min 6 chars)', true);
+                return;
+            }
+
+            if (state.isSignUp) {
+                // Sign up
+                const name = fullNameInput.value.trim() || 'User';
+                const userData = {
+                    id: 'user_' + Date.now(),
+                    email,
+                    name,
+                    type: state.userType,
+                    profile: state.userType === 'customer' ? {
+                        vehicleYear: vehicleYearInput.value,
+                        vehicleMake: vehicleMakeInput.value,
+                        vehicleModel: vehicleModelInput.value,
+                        engineSize: engineSizeSelect.value,
+                        oilType: oilTypeSelect.value
+                    } : {
+                        shopName: shopNameInput.value,
+                        address: shopAddressInput.value,
+                        numBays: numBaysSelect.value,
+                        laborRate: laborRateInput.value,
+                        hours: shopHoursInput.value
+                    }
+                };
+                state.user = userData;
+                state.isLoggedIn = true;
+                showToast(`✅ Welcome${name ? ' ' + name : ''}!`);
+            } else {
+                // Login
+                state.user = {
+                    id: 'user_' + Date.now(),
+                    email,
+                    name: 'User',
+                    type: state.userType
+                };
+                state.isLoggedIn = true;
+                showToast('✅ Welcome back!');
+            }
+
+            // Update UI
+            userGreeting.textContent = state.user.name || 'User';
+            profileBtn.textContent = state.user.name ? state.user.name.charAt(0).toUpperCase() : '👤';
+            profileBtn.style.background = '#22C55E';
+            modalOverlay.classList.remove('active');
+
+            // Update price if customer has profile
+            if (state.userType === 'customer' && state.user.profile) {
+                // Pre-fill fields with saved values
+                if (state.user.profile.engineSize) {
+                    engineSizeSelect.value = state.user.profile.engineSize;
+                }
+                if (state.user.profile.oilType) {
+                    oilTypeSelect.value = state.user.profile.oilType;
+                }
+                // Re-calculate and re-render
+                renderShops();
+            }
+
+            // Reset form
+            authForm.reset();
+            toggleAuthMode();
+        }
+
+        // ===== RADIUS TOGGLE =====
+        function toggleRadius() {
+            const options = [3, 5, 7, 10];
+            const currentIndex = options.indexOf(state.radius);
+            const nextIndex = (currentIndex + 1) % options.length;
+            state.radius = options[nextIndex];
+            radiusBtn.textContent = `${state.radius} mi`;
+            loadShops();
+            showToast(`Showing shops within ${state.radius} miles`);
+        }
+
+        // ===== EVENT LISTENERS =====
+        profileBtn.addEventListener('click', () => {
+            if (state.isLoggedIn) {
+                // Show profile or logout option
+                if (confirm(`Logged in as ${state.user.email}\n\nLogout?`)) {
+                    state.isLoggedIn = false;
+                    state.user = null;
+                    userGreeting.textContent = 'Guest';
+                    profileBtn.textContent = '👤';
+                    profileBtn.style.background = '#F97316';
+                    showToast('Logged out');
+                }
+            } else {
+                modalOverlay.classList.add('active');
+            }
+        });
+
+        // Close modal on overlay click
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) modalOverlay.classList.remove('active');
+        });
+
+        // View toggle
+        viewToggle.forEach(btn => {
+            btn.addEventListener('click', () => {
+                viewToggle.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.userType = btn.dataset.view;
+                state.isShopView = state.userType === 'shop';
+
+                // Update modal
+                modalTitle.textContent = state.isShopView ? 'Join as a Shop' : 'Welcome to Coyot';
+                customerFields.style.display = state.isShopView ? 'none' : 'block';
+                shopFields.style.display = state.isShopView ? 'block' : 'none';
+
+                // Update auth button text
+                authSubmit.textContent = state.isSignUp ? 'Sign Up' : 'Log In';
+                toggleAuthMode();
+            });
+        });
+
+        // Auth form
+        authForm.addEventListener('submit', handleAuth);
+
+        // Toggle auth mode
+        toggleAuth.addEventListener('click', toggleAuthMode);
+
+        // Book button
+        bookBtn.addEventListener('click', handleBooking);
+
+        // Location button
+        locateBtn.addEventListener('click', getLocation);
+
+        // Radius button
+        radiusBtn.addEventListener('click', toggleRadius);
+
+        // Refresh button
+        refreshBtn.addEventListener('click', () => {
+            showToast('🔄 Refreshing shops...');
+            loadShops();
+        });
+
+        // Update price when engine/oil changes
+        engineSizeSelect.addEventListener('change', renderShops);
+        oilTypeSelect.addEventListener('change', renderShops);
+
+        // ===== INIT =====
+        function init() {
+            // Try to get location automatically
+            getLocation();
+
+            // Pre-populate with some default customer values for demo
+            vehicleYearInput.value = '2020';
+            vehicleMakeInput.value = 'Toyota';
+            vehicleModelInput.value = 'Camry';
+            shopNameInput.value = "Mike's Auto Repair";
+            shopAddressInput.value = '123 Main St';
+            laborRateInput.value = '80';
+            shopHoursInput.value = '8:00 AM - 6:00 PM';
+
+            console.log('🐺 Coyot App loaded!');
+            console.log('📱 Oil Change On Your Time');
+        }
+
+        // Make functions global for inline onclick
+        window.selectShop = selectShop;
+        window.getLocation = getLocation;
+        window.toggleRadius = toggleRadius;
+
+        // Start the app
+        document.addEventListener('DOMContentLoaded', init);
+
+        // ===== SERVICE WORKER (PWA) =====
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(() => console.log('✅ Service Worker registered'))
+                .catch(err => console.log('SW registration failed:', err));
+        }
+
+        // ===== MANIFEST (PWA) =====
+        // Create manifest dynamically or add as separate file
+        // This is included in the head via <link rel="manifest">
+        console.log('📱 PWA ready — install to home screen for app-like experience');
+    </script>
+</body>
+</html>
