@@ -1,0 +1,425 @@
+// ============================================================
+// GOOGLE MAPS INTEGRATION — Coyot App
+// ============================================================
+
+let map = null;
+let markers = [];
+let userMarker = null;
+let infoWindow = null;
+let selectedShopId = null;
+let mapInitialized = false;
+
+// ===== INIT MAP =====
+function initMap() {
+    if (mapInitialized) return;
+
+    const defaultLocation = { lat: 37.7749, lng: -122.4194 };
+
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: defaultLocation,
+        zoom: 14,
+        styles: getMapStyle(),
+        mapTypeControl: false,
+        fullscreenControl: false,
+        streetViewControl: false,
+        zoomControl: false,
+        gestureHandling: 'greedy'
+    });
+
+    infoWindow = new google.maps.InfoWindow({
+        maxWidth: 280,
+        pixelOffset: new google.maps.Size(0, -10)
+    });
+
+    mapInitialized = true;
+    console.log('🗺️ Map initialized');
+
+    // Try to get user location
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const userLoc = {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude
+                };
+                updateUserLocation(userLoc);
+                state.location = userLoc;
+                loadShops();
+            },
+            () => {
+                console.warn('Geolocation denied, using default');
+                // Still load shops with default location
+                loadShops();
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+    } else {
+        loadShops();
+    }
+
+    // Click on map to close info window
+    map.addListener('click', () => {
+        infoWindow.close();
+    });
+}
+
+// ===== MAP STYLES =====
+function getMapStyle() {
+    return [
+        {
+            featureType: 'poi',
+            elementType: 'labels',
+            stylers: [{ visibility: 'off' }]
+        },
+        {
+            featureType: 'transit',
+            elementType: 'labels',
+            stylers: [{ visibility: 'off' }]
+        },
+        {
+            featureType: 'road',
+            elementType: 'geometry',
+            stylers: [{ lightness: 90 }]
+        },
+        {
+            featureType: 'water',
+            elementType: 'geometry',
+            stylers: [{ color: '#D4E7F7' }]
+        },
+        {
+            featureType: 'landscape',
+            elementType: 'geometry',
+            stylers: [{ color: '#F5F5F5' }]
+        }
+    ];
+}
+
+// ===== UPDATE USER LOCATION =====
+function updateUserLocation(location) {
+    if (userMarker) {
+        userMarker.setPosition(location);
+    } else {
+        userMarker = new google.maps.Marker({
+            position: location,
+            map: map,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 12,
+                fillColor: '#3B82F6',
+                fillOpacity: 1,
+                strokeColor: '#FFFFFF',
+                strokeWeight: 3,
+                animation: google.maps.Animation.DROP
+            },
+            zIndex: 1000,
+            title: 'You are here'
+        });
+
+        // Add pulsing circle
+        const circle = new google.maps.Circle({
+            map: map,
+            radius: 50,
+            center: location,
+            fillColor: '#3B82F6',
+            fillOpacity: 0.15,
+            strokeColor: '#3B82F6',
+            strokeWeight: 1,
+            strokeOpacity: 0.3
+        });
+    }
+
+    map.setCenter(location);
+    map.setZoom(15);
+}
+
+// ===== SHOPS ON MAP =====
+function renderShopsOnMap(shops, highlightShopId = null) {
+    // Clear existing markers
+    markers.forEach(m => m.setMap(null));
+    markers = [];
+
+    if (!shops || !shops.length) {
+        const noShopsMsg = new google.maps.InfoWindow({
+            content: `
+                <div style="padding:12px; text-align:center; font-family:sans-serif;">
+                    <p style="font-size:16px; font-weight:600; margin:0 0 4px;">😕 No shops nearby</p>
+                    <p style="font-size:13px; color:#64748B; margin:0;">Try increasing your search radius</p>
+                </div>
+            `,
+            position: map.getCenter()
+        });
+        noShopsMsg.open(map);
+        setTimeout(() => noShopsMsg.close(), 3000);
+        return;
+    }
+
+    const bounds = new google.maps.LatLngBounds();
+    if (state.location) {
+        bounds.extend(state.location);
+    }
+
+    shops.forEach((shop) => {
+        const position = { lat: shop.lat, lng: shop.lng };
+        bounds.extend(position);
+
+        const isSelected = shop.id === highlightShopId;
+        const statusColor = getStatusColor(shop.status);
+
+        const marker = new google.maps.Marker({
+            position: position,
+            map: map,
+            title: shop.name,
+            zIndex: isSelected ? 100 : 10,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: isSelected ? 18 : 14,
+                fillColor: statusColor,
+                fillOpacity: 1,
+                strokeColor: '#FFFFFF',
+                strokeWeight: isSelected ? 4 : 2,
+                animation: isSelected ? google.maps.Animation.BOUNCE : google.maps.Animation.DROP
+            },
+            shopData: shop,
+            animation: google.maps.Animation.DROP
+        });
+
+        // Add pulsing effect for selected
+        if (isSelected) {
+            const pulseCircle = new google.maps.Circle({
+                map: map,
+                radius: 30,
+                center: position,
+                fillColor: statusColor,
+                fillOpacity: 0.2,
+                strokeColor: statusColor,
+                strokeWeight: 2,
+                strokeOpacity: 0.5
+            });
+            // Animate pulse
+            let scale = 1;
+            setInterval(() => {
+                scale = scale === 1 ? 1.5 : 1;
+                pulseCircle.setRadius(30 * scale);
+            }, 800);
+
+            // Store reference to clean up later
+            marker.pulseCircle = pulseCircle;
+        }
+
+        // Click handler
+        marker.addListener('click', () => {
+            selectShop(shop.id);
+            showShopInfoWindow(marker, shop);
+        });
+
+        markers.push(marker);
+    });
+
+    // Fit bounds
+    if (shops.length > 0) {
+        map.fitBounds(bounds);
+        // Don't zoom too far out
+        google.maps.event.addListenerOnce(map, 'bounds_changed', () => {
+            const zoom = map.getZoom();
+            if (zoom > 16) map.setZoom(16);
+            if (zoom < 12) map.setZoom(12);
+        });
+    }
+
+    // Show selected shop info if highlighted
+    if (highlightShopId) {
+        const selectedShop = shops.find(s => s.id === highlightShopId);
+        if (selectedShop) {
+            const marker = markers.find(m => m.shopData.id === highlightShopId);
+            if (marker) {
+                showShopInfoWindow(marker, selectedShop);
+            }
+        }
+    }
+}
+
+// ===== STATUS COLORS =====
+function getStatusColor(status) {
+    switch (status) {
+        case 'available': return '#22C55E';
+        case 'limited': return '#F59E0B';
+        case 'busy': return '#EF4444';
+        default: return '#94A3B8';
+    }
+}
+
+// ===== SHOP INFO WINDOW =====
+function showShopInfoWindow(marker, shop) {
+    const engineSize = parseFloat(document.getElementById('engineSize')?.value) || 2.5;
+    const oilType = document.getElementById('oilType')?.value || 'synthetic_blend';
+    const priceData = calculatePrice(shop, engineSize, oilType);
+
+    const statusLabel = shop.status.charAt(0).toUpperCase() + shop.status.slice(1);
+    const statusColor = getStatusColor(shop.status);
+    const ratingStars = '⭐'.repeat(Math.floor(shop.rating)) + (shop.rating % 1 >= 0.5 ? '⭐' : '');
+
+    const content = `
+        <div style="font-family:'Inter',sans-serif; padding:4px 0; min-width:220px;">
+            <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:4px;">
+                <h3 style="margin:0; font-size:16px; font-weight:700; color:#1E293B;">${shop.name}</h3>
+                <span style="background:${statusColor}; color:#fff; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:700;">${statusLabel}</span>
+            </div>
+            <div style="font-size:13px; color:#64748B;">${ratingStars} ${shop.rating} (${shop.reviews} reviews)</div>
+            <div style="font-size:13px; color:#64748B; margin:2px 0;">📍 ${shop.distance} miles · ${shop.hours}</div>
+            <div style="font-size:13px; color:#64748B;">${shop.address}</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:8px; border-top:1px solid #E2E8F0;">
+                <span style="font-size:20px; font-weight:800; color:#1E3A5F;">$${priceData.total}</span>
+                <button onclick="window.selectShop('${shop.id}')" style="background:#F97316; color:#fff; border:none; padding:6px 16px; border-radius:6px; font-weight:600; font-size:13px; cursor:pointer;">
+                    Book
+                </button>
+            </div>
+            <div style="font-size:11px; color:#94A3B8; margin-top:4px;">includes oil, filter, labor</div>
+        </div>
+    `;
+
+    infoWindow.setContent(content);
+    infoWindow.open(map, marker);
+}
+
+// ===== SEARCH SHOPS ON MAP =====
+function searchShopsNearby(location, radius = 5) {
+    // In production, this would call your backend API
+    // For demo, we use mock data with distance calculation
+    const mockShops = getMockShops();
+    const shopsWithDistance = mockShops.map(shop => {
+        const dist = haversineDistance(
+            location.lat, location.lng,
+            shop.lat, shop.lng
+        );
+        return { ...shop, distance: Math.round(dist * 10) / 10 };
+    });
+
+    const filtered = shopsWithDistance.filter(s => s.distance <= radius);
+    state.shops = filtered.sort((a, b) => a.distance - b.distance);
+
+    renderShopsOnMap(state.shops);
+    renderShopsList(state.shops);
+    return state.shops;
+}
+
+// ===== MOCK SHOPS DATA =====
+function getMockShops() {
+    return [
+        {
+            id: 'shop_1',
+            name: "Mike's Auto Repair",
+            address: "123 Main St",
+            lat: 37.7749,
+            lng: -122.4194,
+            rating: 4.8,
+            reviews: 203,
+            status: 'available',
+            baseLaborRate: 80,
+            numBays: 3,
+            occupiedBays: 1,
+            hours: '8:00 AM - 6:00 PM',
+        },
+        {
+            id: 'shop_2',
+            name: "Sarah's Garage",
+            address: "456 Oak Ave",
+            lat: 37.7829,
+            lng: -122.4104,
+            rating: 4.9,
+            reviews: 156,
+            status: 'available',
+            baseLaborRate: 75,
+            numBays: 2,
+            occupiedBays: 0,
+            hours: '7:30 AM - 5:30 PM',
+        },
+        {
+            id: 'shop_3',
+            name: "David's Car Care",
+            address: "789 Pine St",
+            lat: 37.7689,
+            lng: -122.4254,
+            rating: 4.6,
+            reviews: 89,
+            status: 'limited',
+            baseLaborRate: 85,
+            numBays: 4,
+            occupiedBays: 3,
+            hours: '8:00 AM - 7:00 PM',
+        },
+        {
+            id: 'shop_4',
+            name: "Quick Lube Express",
+            address: "321 Elm Blvd",
+            lat: 37.7909,
+            lng: -122.4324,
+            rating: 4.2,
+            reviews: 312,
+            status: 'busy',
+            baseLaborRate: 70,
+            numBays: 5,
+            occupiedBays: 5,
+            hours: '7:00 AM - 8:00 PM',
+        },
+        {
+            id: 'shop_5',
+            name: "Honest Mechanic Co.",
+            address: "654 Cedar Ln",
+            lat: 37.7629,
+            lng: -122.4084,
+            rating: 4.9,
+            reviews: 47,
+            status: 'available',
+            baseLaborRate: 82,
+            numBays: 2,
+            occupiedBays: 0,
+            hours: '9:00 AM - 5:00 PM',
+        }
+    ];
+}
+
+// ===== LOAD GOOGLE MAPS API =====
+function loadGoogleMapsAPI() {
+    const apiKey = 'YOUR_GOOGLE_MAPS_API_KEY'; // Replace with your key
+
+    if (document.querySelector('script[src*="maps.googleapis.com"]')) {
+        if (typeof google !== 'undefined' && google.maps) {
+            initMap();
+        }
+        return;
+    }
+
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+
+    window.initMap = initMap;
+}
+
+// ===== HAVERSINE DISTANCE =====
+function haversineDistance(lat1, lon1, lat2, lon2) {
+    const R = 3959; // miles
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+// ===== EXPOSE FUNCTIONS GLOBALLY =====
+window.initMap = initMap;
+window.renderShopsOnMap = renderShopsOnMap;
+window.searchShopsNearby = searchShopsNearby;
+window.loadGoogleMapsAPI = loadGoogleMapsAPI;
+
+// ===== GOOGLE MAPS HTML INTEGRATION =====
+// Replace the map placeholder in your HTML with:
+/*
+<div id="map" style="flex:1; min-height:300px;"></div>
+*/
+
+// And in your script, call:
+// loadGoogleMapsAPI();
